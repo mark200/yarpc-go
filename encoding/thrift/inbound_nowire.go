@@ -22,17 +22,22 @@ package thrift
 
 import (
 	"context"
+	"fmt"
 	"io"
 
+	"go.uber.org/atomic"
 	"go.uber.org/multierr"
 	"go.uber.org/thriftrw/protocol/stream"
 	"go.uber.org/thriftrw/wire"
 	encodingapi "go.uber.org/yarpc/api/encoding"
 	"go.uber.org/yarpc/api/transport"
+	"go.uber.org/yarpc/internal/observabilitylogger"
 	"go.uber.org/yarpc/pkg/errors"
+	"go.uber.org/zap"
 )
 
 var _emptyResponse = NoWireResponse{}
+var _loggedMissingAppErrMetaSetter atomic.Bool
 
 // NoWireCall contains all of the required objects needed for an underlying
 // Handle needs to unpack any given request.
@@ -94,6 +99,14 @@ func (t thriftNoWireHandler) Handle(ctx context.Context, treq *transport.Request
 				Name:    res.ApplicationErrorName,
 				Code:    res.ApplicationErrorCode,
 			})
+		} else if logger := observabilitylogger.FromContext(ctx); logger != nil {
+			if !_loggedMissingAppErrMetaSetter.Swap(true) {
+				logger.Warn("ResponseWriter does not implement ApplicationErrorMetaSetter; "+
+					"application error metadata will not be propagated to transport",
+					zap.String("responseWriterType", fmt.Sprintf("%T", rw)),
+					zap.Stack("stacktrace"),
+				)
+			}
 		}
 	}
 

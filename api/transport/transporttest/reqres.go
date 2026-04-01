@@ -216,6 +216,12 @@ type FakeResponseWriter struct {
 	Body                 bytes.Buffer
 }
 
+// FakeApplicationErrorMetaSetter is a ResponseWriter that also
+// implements ApplicationErrorMetaSetter
+type FakeApplicationErrorMetaSetter struct {
+	FakeResponseWriter
+}
+
 // SetApplicationError for FakeResponseWriter.
 func (fw *FakeResponseWriter) SetApplicationError() {
 	fw.IsApplicationError = true
@@ -234,6 +240,6 @@ func (fw *FakeResponseWriter) Write(s []byte) (int, error) {
 }
 
 // SetApplicationErrorMeta for FakeResponseWriter
-func (fw *FakeResponseWriter) SetApplicationErrorMeta(applicationErrorMeta *transport.ApplicationErrorMeta) {
+func (fw *FakeApplicationErrorMetaSetter) SetApplicationErrorMeta(applicationErrorMeta *transport.ApplicationErrorMeta) {
 	fw.ApplicationErrorMeta = applicationErrorMeta
 }
