@@ -136,7 +136,7 @@ func (g g) Generate(req *api.GenerateServiceRequest) (*api.GenerateServiceRespon
 		}
 		m, err := compile.Compile(thriftFilePath)
 		if err != nil {
-			return nil, fmt.Errorf("error compiling the thrift file: %s", err.Error())
+			return nil, fmt.Errorf("error compiling the thrift file: %w", err)
 		}
 		compiledModules[thriftFilePath] = m
 		return m, nil

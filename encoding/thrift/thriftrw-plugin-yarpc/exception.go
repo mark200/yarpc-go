@@ -106,12 +106,6 @@ func yarpcErrorGenerator(data *moduleTemplateData, files map[string][]byte) erro
 	// kv.thrift => .../kv/types_yarpc.go
 	path := filepath.Join(data.Module.Directory, "types_yarpc.go")
 
-	// data.CompiledModule is the result of compiling the original Thrift file.
-	// Plugins do not have access to it via the API, so it is compiled once in
-	// Generate and shared across generators; this generator writes extra
-	// methods to exception types defined in that Thrift file.
-	compiledModule := data.CompiledModule
-
 	templateOptions := append(templateOptions,
 		plugin.TemplateFunc("isException", func(t compile.TypeSpec) bool {
 			if t, ok := t.(*compile.StructSpec); ok {
@@ -128,7 +122,11 @@ func yarpcErrorGenerator(data *moduleTemplateData, files map[string][]byte) erro
 	)
 
 	var err error
-	files[path], err = plugin.GoFileFromTemplate(path, yarpcerrorTemplate, compiledModule, templateOptions...)
+	// data.CompiledModule is the result of compiling the original Thrift file.
+	// Plugins do not have access to it via the API, so it is compiled once in
+	// Generate and shared across generators; this generator writes extra
+	// methods to exception types defined in that Thrift file.
+	files[path], err = plugin.GoFileFromTemplate(path, yarpcerrorTemplate, data.CompiledModule, templateOptions...)
 	return err
 }
 
