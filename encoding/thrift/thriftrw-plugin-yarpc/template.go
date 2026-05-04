@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"strings"
 
+	"go.uber.org/thriftrw/compile"
 	"go.uber.org/thriftrw/plugin"
 	"go.uber.org/thriftrw/plugin/api"
 )
@@ -106,6 +107,11 @@ type serviceTemplateData struct {
 	OnewayWrapperFunc   string
 	SanitizeTChannel    bool
 	MockLibrary         string
+
+	// CompiledModule is the result of compile.Compile on the service's Thrift
+	// file. It is shared across all generators so the file is compiled at most
+	// once per request.
+	CompiledModule *compile.Module
 }
 
 // moduleTemplateData contains the data for code gen templates. This should be
@@ -116,6 +122,11 @@ type moduleTemplateData struct {
 	Module *api.Module
 
 	ContextImportPath string
+
+	// CompiledModule is the result of compile.Compile on the module's Thrift
+	// file. It is shared across all generators so the file is compiled at most
+	// once per request.
+	CompiledModule *compile.Module
 }
 
 // ParentServerPackagePath returns the import path for the immediate parent
