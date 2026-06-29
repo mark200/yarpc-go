@@ -11,10 +11,17 @@ import (
 )
 
 // ServerParams defines the dependencies for the ExtendOnly server.
+//
+// In addition to the required extendonlyserver.Interface handler, ServerParams
+// accepts an optional value group of thrift.RegisterOption values keyed
+// by thrift.FxRegisterOptionGroup ("yarpc.thrift.register_options").
+// Any module in the Fx container can contribute RegisterOptions through
+// this group without changing the call site of Server().
 type ServerParams struct {
 	fx.In
 
-	Handler extendonlyserver.Interface
+	Handler         extendonlyserver.Interface
+	RegisterOptions []thrift.RegisterOption `group:"yarpc.thrift.register_options"`
 }
 
 // ServerResult defines the output of ExtendOnly server module. It provides the
@@ -37,9 +44,15 @@ type ServerResult struct {
 //		},
 //		extendonlyfx.Server(),
 //	)
+//
+// Options supplied via the opts variadic are applied first; options
+// contributed through the thrift.FxRegisterOptionGroup value group are
+// appended after, so under registerConfig's last-write-wins semantics they
+// override anything passed directly at construction time.
 func Server(opts ...thrift.RegisterOption) interface{} {
 	return func(p ServerParams) ServerResult {
-		procedures := extendonlyserver.New(p.Handler, opts...)
+		allOpts := append(opts, p.RegisterOptions...)
+		procedures := extendonlyserver.New(p.Handler, allOpts...)
 		return ServerResult{Procedures: procedures}
 	}
 }
