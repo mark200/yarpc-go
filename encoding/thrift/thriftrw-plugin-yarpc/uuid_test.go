@@ -50,12 +50,12 @@ func stepCasts(p *uuidPath) []string {
 	out := make([]string, 0, len(p.Steps))
 	for _, s := range p.Steps {
 		switch {
-		case s.CastTypeName == "":
+		case s.CastStructName == "":
 			out = append(out, "")
 		case s.CastImportPath == "":
-			out = append(out, s.CastTypeName)
+			out = append(out, s.CastStructName)
 		default:
-			out = append(out, s.CastImportPath+"."+s.CastTypeName)
+			out = append(out, s.CastImportPath+"."+s.CastStructName)
 		}
 	}
 	return out
@@ -320,19 +320,6 @@ func TestServiceHasActorUUIDMethod(t *testing.T) {
 		svc := &api.Service{Name: "NotThere", ThriftName: "NotThere"}
 		assert.False(t, serviceHasActorUUIDMethod(svc, withSvcMod))
 	})
-}
-
-func TestGoCase(t *testing.T) {
-	cases := map[string]string{
-		"UserIdentifier":  "UserIdentifier",
-		"userIdentifier":  "UserIdentifier",
-		"user_identifier": "UserIdentifier",
-		"UUID":            "UUID",
-		"interested":      "Interested",
-	}
-	for in, want := range cases {
-		assert.Equal(t, want, goCase(in), "goCase(%q)", in)
-	}
 }
 
 // TestGetGeneratedUUID exercises the ActorUUID() accessors thriftrw
