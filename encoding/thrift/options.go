@@ -53,6 +53,27 @@ type RegisterOption interface {
 	applyRegisterOption(*registerConfig)
 }
 
+// FxRegisterOptionGroup is the Fx value-group name through which arbitrary
+// RegisterOption values can be supplied to every generated <svc>fx.Server()
+// in the container.
+//
+// Any module in the Fx graph can contribute RegisterOptions by providing
+// them into this group, e.g.
+//
+//	fx.Provide(
+//		fx.Annotated{
+//			Group: thrift.FxRegisterOptionGroup,
+//			Target: func() thrift.RegisterOption {
+//				return thrift.WithActorUUIDValidator(myValidator)
+//			},
+//		},
+//	)
+//
+// Group-supplied options are appended after options passed directly to the
+// generated Server constructor, so they take precedence under the
+// last-write-wins semantics of registerConfig.
+const FxRegisterOptionGroup = "yarpc.thrift.register_options"
+
 // Option unifies options that apply to both, Thrift clients and handlers.
 type Option interface {
 	ClientOption
